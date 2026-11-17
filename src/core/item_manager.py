@@ -43,30 +43,8 @@ def registerItem(items, item_type, item_name, category, color, brand, location, 
     items.append(item)
 
     return item
-#testing multiple item if they are registering or not
 
-# Create an empty list
-items = []
 
-# Register a lost wallet
-registerItem(
-    items, "lost", "Wallet", "Accessories",
-    "Brown", "Gucci", "University Library",
-    "2026-11-26", "Brown leather wallet"
-)
-
-# Register a found phone
-registerItem(
-    items, "found", "Phone", "Electronics",
-    "Black", "Apple", "University Library",
-    "2026-11-26", "Black iPhone"
-)
-
-# Display registered items
-print("Total items:", len(items))
-
-for item in items:
-    print(item["item_ID"])
 
 
 #view registered items
@@ -87,9 +65,6 @@ def viewAllItems(items):
         print("Description:",item["description"])
         print("Status:",item["status"])
 
-viewAllItems(items)
-
-print("\n==============================")
 
 #show lost and found seperately
 def viewLostItems(items):
@@ -106,39 +81,52 @@ def viewFoundItems(items):
             found_items.append(item)
     viewAllItems(found_items)
 
-#test
-print("\n--- LOST ITEMS---")
-viewLostItems(items)
-print("\n--- FOUND ITEMS---")
-viewFoundItems(items)
 
-#searching using id
-def searchItemByID(items, item_ID):
+
+#updating item info using ID
+def updateItem(items, item_ID, field, new_value):
     for item in items:
-        if item["item_ID"].lower()==item_ID.lower():
-            print("\n---ITEM FOUND---")
-            print("Item ID:",item["item_ID"])
-            print("Name:", item["item_name"])
-            print("type:",item["item_type"])
-            print("Category:",item["category"])
-            print("Color:",item["color"])
-            print("Brand:",item["brand"])
-            print("Location:",item["location"])
-            print("Date:",item["date"])
-            print("Description:",item["description"])
-            print("Status:",item["status"])
-            return item
-    print("no item found with this id.")
+        if item["item_ID"].lower() == item_ID.lower():
+            if field in item and field not in ["item_ID","item_type","status"]:
+                item[field] = new_value
+                print("Item information updated successfully.")
+                return item
+            print("Invalid Field. Cannot update this info.")
+            return None
+    print("No item found with this ID.")
     return None
 
 
 
-#test
-print("----SEARCH ITEM---")
-searchItemByID(items, "L001")
-searchItemByID(items, "F001")
-searchItemByID(items, "L999")
-               
-        
+
+# updating item status
+def updateItemStatus(items, item_ID, new_status):
+    valid_status = ["Lost", "Found", "Matched", "Returned"]
+
+    if new_status not in valid_status:
+        print("Invalid status.")
+        return None
+
+    for item in items:
+        if item["item_ID"].lower() == item_ID.lower():
+            item["status"] = new_status
+            print("Item status updated successfully.")
+            return item
+
+    print("No item found with this ID.")
+    return None
+
+
+
+# Delete an item
+def deleteItem(items, item_ID):
+    for item in items:
+        if item["item_ID"].lower() == item_ID.lower():
+            items.remove(item)
+            print("Item deleted successfully.")
+            return item
+
+    print("No item found with this ID.")
+    return None
 
 

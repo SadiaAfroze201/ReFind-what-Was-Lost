@@ -1,0 +1,28 @@
+[
+    {
+        "item_ID": "L001",
+        "item_type": "lost",
+        "item_name": "Wallet",
+        "category": "Accessories",
+        "color": "Brown",
+        "brand": "Gucci",
+        "location": "University Library",
+        "date": "2026-11-26",
+        "description": "Brown leather wallet",
+        "photo": null,
+        "status": "Lost"
+    },
+    {
+        "item_ID": "F001",
+        "item_type": "found",
+        "item_name": "Phone",
+        "category": "Electronics",
+        "color": "Black",
+        "brand": "Apple",
+        "location": "University Library",
+        "date": "2026-11-26",
+        "description": "Black iPhone",
+        "photo": null,
+        "status": "Found"
+    }
+]
