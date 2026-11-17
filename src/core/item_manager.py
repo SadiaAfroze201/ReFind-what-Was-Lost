@@ -3,6 +3,8 @@
 # and clarify programming concepts
 # The application code is writtrn by the student
 
+from datetime import datetime
+
 # generating unique ID
 L_count = 0
 F_count = 0
@@ -15,8 +17,34 @@ def generateItemID(item_type):
         F_count += 1
         return f"F{F_count:03d}"
 
+
+#validate item type so that only it can register as lost and found
+def validateItemType(item_type):
+    if item_type not in["lost", "found"]:
+        print("Invalid item type. Please choose 'lost' or 'found'.")
+        return False
+    return True
+
+#validating fields that have to be filled in terms of registering an item
+def validateRequiredFields(item_name,category,color,location,description):
+    required_fields= [item_name,category,color,location,description]
+    for field in required_fields:
+        if not field or not field.strip():
+            print("Required fields cannot be empty.")
+            return False
+    return True
+
+#setting date format
+def validateDate(date):
+    try:
+        datetime.strptime(date, "%Y-%m-%d")
+        return True
+    except ValueError:
+        print("Invalid Date! Please use 'YYYY-MM-DD' format.")
+        return False
+
+ #generating item id
 def createItem(item_type, item_name, category, color, brand, location, date, description, photo=None):
-    #generating item id
     item_ID = generateItemID(item_type)
 
 #generating item
@@ -37,15 +65,17 @@ def createItem(item_type, item_name, category, color, brand, location, date, des
 
 #registering item
 def registerItem(items, item_type, item_name, category, color, brand, location, date, description, photo=None):
+    if not validateItemType(item_type):
+        return None
 
+    if not validateRequiredFields(item_name,category,color,location,description):
+        return None
+
+    if not validateDate(date):
+        return None
     item = createItem(item_type, item_name, category, color, brand, location, date, description, photo)
-
     items.append(item)
-
     return item
-
-
-
 
 #view registered items
 def viewAllItems(items):
@@ -81,8 +111,6 @@ def viewFoundItems(items):
             found_items.append(item)
     viewAllItems(found_items)
 
-
-
 #updating item info using ID
 def updateItem(items, item_ID, field, new_value):
     for item in items:
@@ -95,9 +123,6 @@ def updateItem(items, item_ID, field, new_value):
             return None
     print("No item found with this ID.")
     return None
-
-
-
 
 # updating item status
 def updateItemStatus(items, item_ID, new_status):
@@ -115,8 +140,6 @@ def updateItemStatus(items, item_ID, new_status):
 
     print("No item found with this ID.")
     return None
-
-
 
 # Delete an item
 def deleteItem(items, item_ID):
