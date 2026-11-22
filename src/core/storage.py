@@ -15,3 +15,25 @@ def loadItems():
     except json.JSONDecodeError:
         print("Items file contains invalid json. starting with an empty list.")
         return[]
+
+
+#save contact rqsts to the json file
+def saveReq(requests):
+    with open("data/requests.json", "w") as file:
+        json.dump(requests, file, indent=4)
+
+
+#load contact rqsts from json file
+def loadReq():
+    try:
+        with open("data/requests.json", "r") as file:
+            requests = json.load(file)
+            return requests
+
+    except FileNotFoundError:
+        print("Request file is not found. Starting with an empty list.")
+        return []
+
+    except json.JSONDecodeError:
+        print("Request file contains invalid json. Starting with an empty list.")
+        return []
