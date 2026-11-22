@@ -1,0 +1,20 @@
+[
+    {
+        "req_id": "R001",
+        "item_ID": "L001",
+        "requester_name": "Test User",
+        "requester_contact": "test@example.com",
+        "message": "I think this is my wallet.",
+        "status": "Pending",
+        "response": ""
+    },
+    {
+        "req_id": "R002",
+        "item_ID": "L001",
+        "requester_name": "Another User",
+        "requester_contact": "another@example.com",
+        "message": "I think this is my wallet.",
+        "status": "Pending",
+        "response": ""
+    }
+]
