@@ -1,22 +1,48 @@
-# GenAI Acknoledgement:
-# ChatGPT(OpenAI) is used to support project planning and brainstorming
-# and clarify programming concepts
-# The application code is writtrn by the student
+"""
+Generative AI Acknowledgement:
+ChatGPT (OpenAI) was used to support the planning and development of this
+project through brainstorming, explaining programming concepts, clarifying
+technical questions, and providing guidance on Git setup and version control.
+All application code was independently written, implemented, and tested by
+the student.
 
+Student Name: Sadia Afroze Zafrin
+Student ID: 26032504
+"""
 from datetime import datetime
 
 # generating unique ID
-L_count = 0
-F_count = 0
-def generateItemID(item_type):
-    global L_count, F_count
-    if item_type == "lost":
-        L_count += 1
-        return f"L{L_count:03d}"
-    elif item_type == "found":
-        F_count += 1
-        return f"F{F_count:03d}"
+# generating unique ID
+def generateItemID(item_type, items=None):
 
+    #choose the correct ID letter
+    if item_type == "lost":
+        prefix = "L"
+    elif item_type == "found":
+        prefix = "F"
+    else:
+        return None
+
+    #start checking from zero
+    highest_num = 0
+
+    #check existing IDs so they dont get repeated
+    if items is None:
+        items = []
+
+    for item in items:
+        item_id = item["item_ID"]
+
+        if item_id.startswith(prefix):
+            num = int(item_id[1:])
+
+            if num > highest_num:
+                highest_num = num
+
+    #use the next number for the new ID
+    next_num = highest_num + 1
+
+    return f"{prefix}{next_num:03d}"
 
 #validate item type so that only it can register as lost and found
 def validateItemType(item_type):
@@ -44,8 +70,8 @@ def validateDate(date):
         return False
 
  #generating item id
-def createItem(item_type, item_name, category, color, brand, location, date, description, photo=None):
-    item_ID = generateItemID(item_type)
+def createItem(item_type, item_name, category, color, brand, location, date, description, photo=None, items=None):
+    item_ID = generateItemID(item_type, items)
 
 #generating item
     item = {
@@ -73,43 +99,59 @@ def registerItem(items, item_type, item_name, category, color, brand, location, 
 
     if not validateDate(date):
         return None
-    item = createItem(item_type, item_name, category, color, brand, location, date, description, photo)
+    item = createItem(item_type, item_name, category, color, brand, location, date, description, photo, items)
     items.append(item)
     return item
 
-#view registered items
+#display item details
+def displayItems(items):
+    for item in items:
+        print("\nItem ID:", item["item_ID"])
+        print("Name:", item["item_name"])
+        print("Type:", item["item_type"])
+        print("Category:", item["category"])
+        print("Color:", item["color"])
+        print("Brand:", item["brand"])
+        print("Location:", item["location"])
+        print("Date:", item["date"])
+        print("Description:", item["description"])
+        print("Status:", item["status"])
+
+
+#view all registered items
 def viewAllItems(items):
     if not items:
-        print("There is no registered item")
+        print("There are no registered items.")
         return
-    print("\n ALL ITEMS")
-    for item in items:
-        print("\nItem ID:",item["item_ID"])
-        print("Name:", item["item_name"])
-        print("type:",item["item_type"])
-        print("Category:",item["category"])
-        print("Color:",item["color"])
-        print("Brand:",item["brand"])
-        print("Location:",item["location"])
-        print("Date:",item["date"])
-        print("Description:",item["description"])
-        print("Status:",item["status"])
 
+    print("\n--- ALL ITEMS ---")
+    displayItems(items)
 
 #show lost and found seperately
 def viewLostItems(items):
-    lost_items=[]
+    lost_items = []
     for item in items:
-        if item["item_type"] =="lost":
+        if item["item_type"] == "lost":
             lost_items.append(item)
-    viewAllItems(lost_items)
+
+    print("\n--- LOST ITEMS ---")
+    if lost_items:
+        displayItems(lost_items)
+    else:
+        print("No lost items found.")
+
 
 def viewFoundItems(items):
-    found_items=[]
+    found_items = []
     for item in items:
-        if item["item_type"] =="found":
+        if item["item_type"] == "found":
             found_items.append(item)
-    viewAllItems(found_items)
+
+    print("\n--- FOUND ITEMS ---")
+    if found_items:
+        displayItems(found_items)
+    else:
+        print("No found items found.")
 
 #updating item info using ID
 def updateItem(items, item_ID, field, new_value):
@@ -148,7 +190,6 @@ def deleteItem(items, item_ID):
             items.remove(item)
             print("Item deleted successfully.")
             return item
-
     print("No item found with this ID.")
     return None
 
