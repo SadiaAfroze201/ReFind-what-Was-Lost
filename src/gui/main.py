@@ -1,11 +1,15 @@
-
 """
-Generative AI Acknowledgement:
-ChatGPT (OpenAI) was used to support the planning and development of this
-project through brainstorming, explaining programming concepts, clarifying
-technical questions, and providing guidance on Git setup and version control.
-All application code was independently written, implemented, and tested by
-the student.
+GenAI Acknowledgment (Assessment 1 - Assisted Reviewer):
+In compliance with Keele University academic integrity policies, I used 
+generative AI (Chatgpt) strictly as an assisted code reviewer and debugger. 
+I consulted the tool to help diagnose runtime exceptions (such as Tkinter TclError 
+and NameError), identify subtle typographical errors that were difficult to spot 
+manually (e.g.first name is found_page_label, but the second is found_pge_label. The letter a is missing from page), and check 
+function execution flow. I take help to understanding git and how to commit push and pull. 
+As well as, i consulted with chatgpt during project architecture work and brainstorming.
+All core logic, functional decisions, 
+and final code implementations were independently written, tested, and verified by me.
+
 
 Student Name: Sadia Afroze Zafrin
 Student ID: 26032504
@@ -17,6 +21,28 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 from datetime import datetime
 from src.core.storage import loadItems
+
+
+# managing search bar placeholder text
+def setup_search_placeholder(entry):
+
+    placeholder = "Search by item name, category or location..."
+
+    # removing placeholder when user clicks the search bar
+    def on_focus_in(event):
+        if entry.get() == placeholder:
+            entry.delete(0, "end")
+            entry.config(fg="#403747")
+
+    # showing placeholder again if search bar is empty
+    def on_focus_out(event):
+        if not entry.get().strip():
+            entry.insert(0, placeholder)
+            entry.config(fg="#777777")
+
+    entry.bind("<FocusIn>", on_focus_in)
+    entry.bind("<FocusOut>", on_focus_out)
+
 
 
 # crting the main aplictn window
@@ -45,12 +71,10 @@ dashboard_frame = tk.Frame(main_area, bg="#F8F3F8")
 dashboard_frame.pack(fill="both", expand=True)
 
 lost_items_frame = tk.Frame(main_area, bg="#F8F3F8")
-
-
+found_items_frame=tk.Frame(main_area, bg="#F8F3F8")
 # --------------------------------------------------
 # LOST ITEMS PAGE
 # --------------------------------------------------
-
 # crting banner at top of Lost Items page
 lost_banner_frame = tk.Frame(
     lost_items_frame,
@@ -139,7 +163,195 @@ lost_banner_canvas.create_text(
     fill="white",
     anchor="w"
 )
+# --------------------------------------------------
+# FOUND ITEMS PAGE
+# --------------------------------------------------
+# crting banner at top of Found Items page
+found_banner_frame = tk.Frame(
+    found_items_frame,
+    height=220,
+    bg="#F8F3F8"
+)
+found_banner_frame.pack(fill="x")
+found_banner_frame.pack_propagate(False)
 
+# lding same banner img used on Lost Items page
+found_banner_img = Image.open("assets/dashboard_banner.jpg")
+
+# using Canvas to place text over img
+found_banner_canvas = tk.Canvas(
+    found_banner_frame,
+    height=220,
+    highlightthickness=0,
+    bd=0
+)
+found_banner_canvas.pack(fill="both", expand=True)
+
+# resizing banner img when window size chngs
+def resize_found_banner(event):
+    global found_banner_photo
+
+    resized_img = found_banner_img.resize((event.width, 220))
+    found_banner_photo = ImageTk.PhotoImage(resized_img)
+
+    found_banner_canvas.itemconfig(
+        found_banner_img_id,
+        image=found_banner_photo
+    )
+
+# displaying banner img
+found_banner_photo = ImageTk.PhotoImage(
+    found_banner_img.resize((820, 220))
+)
+
+found_banner_img_id = found_banner_canvas.create_image(
+    0, 0,
+    image=found_banner_photo,
+    anchor="nw"
+)
+
+found_banner_frame.bind("<Configure>", resize_found_banner)
+
+# adding shadow behind Found Items heading
+found_banner_canvas.create_text(
+    37, 67,
+    text="Found Items",
+    font=("Goudy Old Style", 38, "bold"),
+    fill="#50334F",
+    anchor="w"
+)
+
+# displaying Found Items heading
+found_banner_canvas.create_text(
+    35, 65,
+    text="Found Items",
+    font=("Goudy Old Style", 38, "bold"),
+    fill="white",
+    anchor="w"
+)
+
+# adding shadow behind subtitle
+found_banner_canvas.create_text(
+    37, 105,
+    text="Help lost belongings find their way home.",
+    font=("Goudy Old Style", 18, "bold"),
+    fill="#50334F",
+    anchor="w"
+)
+
+# displaying short dscrption below heading
+found_banner_canvas.create_text(
+    35, 103,
+    text="Help lost belongings find their way home.",
+    font=("Goudy Old Style", 18, "bold"),
+    fill="white",
+    anchor="w"
+)
+
+# ------------------------------------------
+#           FOUND SEARCH BAR
+# ------------------------------------------
+
+# creating shadow behind found search bar
+found_srch_shadow = tk.Frame(
+    found_banner_frame,
+    bg="#D8C9DF"
+)
+
+# creating main search box
+found_srch_box = tk.Frame(
+    found_banner_frame,
+    bg="white",
+    highlightbackground="#E8DDEA",
+    highlightthickness=1
+)
+
+
+# adjusting search bar position when banner size changes
+def resize_found_srch_bar(event):
+    srch_width = min(700, max(350, event.width - 70))
+    srch_x = (event.width - srch_width) // 2
+
+    found_srch_shadow.place(
+        x=srch_x + 2,
+        y=143,
+        width=srch_width,
+        height=55
+    )
+
+    found_srch_box.place(
+        x=srch_x,
+        y=140,
+        width=srch_width,
+        height=55
+    )
+
+
+found_banner_frame.bind("<Configure>", resize_found_srch_bar)
+
+
+# adding search icon
+tk.Label(
+    found_srch_box,
+    text="⌕",
+    font=("Segoe UI", 25),
+    bg="white",
+    fg="#76558A"
+).pack(side="left", padx=(16, 10))
+
+
+# creating input field
+found_srch_entry = tk.Entry(
+    found_srch_box,
+    font=("Segoe UI", 12),
+    bg="white",
+    fg="#777777",
+    insertbackground="#30213F",
+    relief="flat",
+    bd=0
+)
+
+found_srch_entry.pack(
+    side="left",
+    fill="both",
+    expand=True,
+    padx=(0, 8)
+)
+
+found_srch_entry.insert(
+    0,
+    "Search by item name, category or location..."
+)
+setup_search_placeholder(found_srch_entry)
+
+# creating found items search button
+found_srch_button = tk.Button(
+    found_srch_box,
+    text="Search",
+    font=("Segoe UI", 10, "bold"),
+    bg="#76558A",
+    fg="white",
+    activebackground="#50334F",
+    activeforeground="white",
+    relief="flat",
+    bd=0,
+    cursor="hand2",
+    padx=20,
+    command=lambda: search_items(found_srch_entry, "found")
+)
+
+found_srch_button.pack(side="right", padx=6, pady=6)
+
+
+# allowing search by pressing Enter
+found_srch_entry.bind(
+    "<Return>",
+    lambda event: search_items(found_srch_entry, "found")
+)
+
+#------------------------------------------
+#            LOST SEARCH BAR
+#---------------------------------------------
 
 # crting srch bar on top of banner
 # shadow is added behind for little depth
@@ -211,6 +423,7 @@ srch_entry.pack(
 
 # showing what users can search for
 srch_entry.insert(0, "Search by item name, category or location...")
+setup_search_placeholder(srch_entry)
 
 
 # cnncting the Srch button to srch fnction
@@ -226,18 +439,17 @@ srch_button = tk.Button(
     bd=0,
     cursor="hand2",
     padx=20,
-    command=lambda: search_lost_items()
+    command=lambda: search_items(srch_entry, "lost")
 )
 
 srch_button.pack(side="right", padx=6, pady=6)
 
 
-# allowing users search by pressing enter button
+# allowing users to search by pressing Enter
 srch_entry.bind(
     "<Return>",
-    lambda event: search_lost_items()
+    lambda event: search_items(srch_entry, "lost")
 )
-
 
 # --------------------------------------------------
 # SIDEBAR NAVIGATION
@@ -254,8 +466,10 @@ def show_page(page, slctd_button):
     global slctd_nav_button
 
     # hiding crrntly displayed pages
+    # hiding currently displayed pages
     dashboard_frame.pack_forget()
     lost_items_frame.pack_forget()
+    found_items_frame.pack_forget()
 
     # displaying page selected
     page.pack(fill="both", expand=True)
@@ -298,6 +512,10 @@ for name in ["Dashboard", "Lost Items", "Found Items", "Contact Request"]:
     elif name == "Lost Items":
         page = lost_items_frame
 
+    elif name == "Found Items":
+        page = found_items_frame
+    
+
     else:
         # these pages will connected when developed
         page = None
@@ -323,12 +541,23 @@ for name in ["Dashboard", "Lost Items", "Found Items", "Contact Request"]:
     # saving each button so its clr can updated later
     nav_buttons.append(nav_button)
 
-    # connecting buttons that already have working pages
+   # connecting buttons that already have working pages
     if page is not None:
-        nav_button.config(
-            command=lambda p=page, b=nav_button: show_page(p, b)
-        )
 
+        if name == "Found Items":
+            nav_button.config(
+                command=lambda b=nav_button: (
+                    show_found_page(0),
+                    show_page(found_items_frame, b)
+                )
+            )
+
+        else:
+            nav_button.config(
+                command=lambda p=page, b=nav_button: show_page(p, b)
+            )
+
+        
     # chnging button clr when mouse moves over it
     nav_button.bind(
         "<Enter>",
@@ -691,7 +920,7 @@ if not recent_items:
 
 
 # --------------------------------------------------
-# LOST ITEMS CARDS AND PAGINATION
+# LOST & FOUND ITEMS CARDS AND PAGINATION
 # --------------------------------------------------
 
 # getting only lost item records from saved data
@@ -742,28 +971,100 @@ lost_page_controls = tk.Frame(
 )
 lost_page_controls.pack(pady=(5, 18))
 
+# getting only found item records from saved data
+found_records = [
+    item for item in items
+    if item.get("item_type", "").lower() == "found"
+]
+
+# crting frame that will hold found item cards
+found_cards_frame = tk.Frame(
+    found_items_frame,
+    bg="#F8F3F8"
+)
+found_cards_frame.pack(
+    fill="both",
+    expand=True,
+    padx=22,
+    pady=(15, 5)
+)
+
+# dividing available space into 3 equal clmns
+for column in range(cards_per_page):
+    found_cards_frame.grid_columnconfigure(
+        column,
+        weight=1,
+        uniform="found_card"
+    )
+
+# crting page navigation controls below cards
+found_page_controls = tk.Frame(
+    found_items_frame,
+    bg="#F8F3F8"
+)
+found_page_controls.pack(pady=(5, 18))
+
+# keeping track of current found items page
+current_found_page = 0
+
+#crting Previous button to move to earlier page
+found_previous_button = tk.Button(
+    found_page_controls,
+    text="<",
+    font=("Segoe UI", 11),
+    bg="#E9E0EF",
+    fg=purple,
+    activebackground="#D9C9E5",
+    relief="flat",
+    width=3,
+    cursor="hand2",
+    command=lambda: show_found_page(current_found_page - 1)
+)
+found_previous_button.pack(side="left", padx=5)
+
+# Shwing crrnt page nmbr
+found_page_label = tk.Label(
+    found_page_controls,
+    font=("Segoe UI", 10, "bold"),
+    bg="#F8F3F8",
+    fg=purple
+)
+found_page_label.pack(side="left", padx=12)
+
+
+#crting nxt button to move following page
+found_next_button = tk.Button(
+    found_page_controls,
+    text="›",
+    font=("Segoe UI", 18, "bold"),
+    bg="#E9E0EF",
+    fg=purple,
+    activebackground="#D9C9E5",
+    relief="flat",
+    width=3,
+    cursor="hand2",
+    command=lambda: show_lost_page(current_page + 1)
+)
+found_next_button.pack(side="left", padx=5)
 
 # --------------------------------------------------
-# SEARCH LOST ITEMS
+# SEARCH LOST & found ITEMS
 # --------------------------------------------------
+# searching through lost and found item records
+def search_items(search_entry, item_type):
 
-# srching through lost item records
-def search_lost_items():
+    global lost_records, found_records
 
-    global lost_records
+    # getting search text and converting it to lowercase
+    search_text = search_entry.get().strip().lower()
 
-    #getting srch text and converting it to lowercase
-    # this makes srch less sensitive to capital letters
-    search_text = srch_entry.get().strip().lower()
-
-    #oading latest saved records before srching
+    # loading latest saved records
     all_items = loadItems()
 
-    #keeping only lost items that match srch text
-    #srch chcks item name, category and location
-    lost_records = [
+    # keeping records that match the search
+    matching_records = [
         item for item in all_items
-        if item.get("item_type", "").lower() == "lost"
+        if item.get("item_type", "").lower() == item_type
         and (
             search_text in item.get("item_name", "").lower()
             or search_text in item.get("category", "").lower()
@@ -771,14 +1072,157 @@ def search_lost_items():
         )
     ]
 
-    # showing srch results from 1st page
-    show_lost_page(0)
+    # updating the correct item records
+    if item_type == "lost":
+        lost_records = matching_records
+        show_lost_page(0)
 
-
+    else:
+        found_records = matching_records
+        show_found_page(0)
 # --------------------------------------------------
-# DISPLAY LOST ITEM CARDS
+# DISPLAY ITEM CARDS
 # --------------------------------------------------
+# creating a reusable card for lost and found items
+def create_item_card(parent, item, status):
 
+    # main card container
+    card = tk.Frame(
+        parent,
+        bg=card_bg,
+        highlightbackground=card_border,
+        highlightthickness=1,
+        bd=0
+    )
+
+    # adding small purple accent at top
+    tk.Frame(
+        card,
+        bg="#8B6AAE",
+        height=5
+    ).pack(fill="x")
+
+    # photo placeholder
+    photo_area = tk.Frame(
+        card,
+        bg=lavender,
+        height=105
+    )
+    photo_area.pack(fill="x", padx=12, pady=(12, 5))
+    photo_area.pack_propagate(False)
+
+    tk.Label(
+        photo_area,
+        text="＋",
+        font=("Segoe UI", 25),
+        bg=lavender,
+        fg="#B5A1C6"
+    ).pack(pady=(12, 0))
+
+    tk.Label(
+        photo_area,
+        text="PHOTO",
+        font=("Segoe UI", 8, "bold"),
+        bg=lavender,
+        fg=muted_text
+    ).pack()
+
+    # item name and status
+    heading = tk.Frame(card, bg=card_bg)
+    heading.pack(fill="x", padx=13, pady=(8, 2))
+
+    tk.Label(
+        heading,
+        text=item.get("item_name", "Unnamed item"),
+        font=("Goudy Old Style", 18, "bold"),
+        bg=card_bg,
+        fg=purple,
+        anchor="w",
+        wraplength=175,
+        justify="left"
+    ).pack(side="left", fill="x", expand=True)
+
+    # choosing status colour
+    if status == "LOST":
+        status_bg = "#F7E8ED"
+        status_fg = "#A34D68"
+    else:
+        status_bg = "#E7F2E9"
+        status_fg = "#477B55"
+
+    tk.Label(
+        heading,
+        text=status,
+        font=("Segoe UI", 8, "bold"),
+        bg=status_bg,
+        fg=status_fg,
+        padx=7,
+        pady=3
+    ).pack(side="right", padx=(5, 0))
+
+    # item description
+    tk.Label(
+        card,
+        text=item.get("description", "No description provided"),
+        font=("Segoe UI", 9),
+        bg=card_bg,
+        fg="#77717D",
+        anchor="w",
+        justify="left",
+        wraplength=205
+    ).pack(fill="x", padx=13, pady=(2, 10))
+
+    # divider
+    tk.Frame(
+        card,
+        bg="#EEE8F1",
+        height=1
+    ).pack(fill="x", padx=13, pady=(0, 7))
+
+    # collecting extra item details
+    details = [
+        ("Category", item.get("category", "N/A")),
+        ("Colour", item.get("color", "N/A")),
+        ("Location", item.get("location", "N/A")),
+        ("Date", item.get("date", "N/A"))
+    ]
+
+    # displaying each detail
+    for label_text, value in details:
+        detail_row = tk.Frame(card, bg=card_bg)
+        detail_row.pack(fill="x", padx=13, pady=3)
+
+        tk.Label(
+            detail_row,
+            text=label_text.upper(),
+            font=("Segoe UI", 8, "bold"),
+            bg=card_bg,
+            fg=muted_text,
+            anchor="w"
+        ).pack(side="left")
+
+        tk.Label(
+            detail_row,
+            text=value,
+            font=("Segoe UI", 8),
+            bg=card_bg,
+            fg="#403747",
+            anchor="e",
+            wraplength=125,
+            justify="right"
+        ).pack(side="right")
+
+    # changing card border colour on hover
+    def card_enter(event):
+        card.configure(highlightbackground="#9A7BB5")
+
+    def card_leave(event):
+        card.configure(highlightbackground=card_border)
+
+    card.bind("<Enter>", card_enter)
+    card.bind("<Leave>", card_leave)
+
+    return card
 #displaying lost item cards for slcted page
 def show_lost_page(page):
     global current_page
@@ -812,17 +1256,10 @@ def show_lost_page(page):
         start_index = current_page * cards_per_page
         page_items = lost_records[start_index:start_index + cards_per_page]
 
-        # crting separate card for each lost item
+        # creating cards using the shared function
         for column, item in enumerate(page_items):
+            card = create_item_card(lost_cards_frame, item, "LOST")
 
-            # main card container
-            card = tk.Frame(
-                lost_cards_frame,
-                bg=card_bg,
-                highlightbackground=card_border,
-                highlightthickness=1,
-                bd=0
-            )
             card.grid(
                 row=0,
                 column=column,
@@ -830,128 +1267,8 @@ def show_lost_page(page):
                 padx=7,
                 pady=7
             )
-
-            #adding small purple accent at top of each card
-            tk.Frame(
-                card,
-                bg="#8B6AAE",
-                height=5
-            ).pack(fill="x")
-
-            #crting placeholder for item photo
-            # actual uploaded photos can be displayed here later
-            photo_area = tk.Frame(
-                card,
-                bg=lavender,
-                height=105
-            )
-            photo_area.pack(fill="x", padx=12, pady=(12, 5))
-            photo_area.pack_propagate(False)
-
-            tk.Label(
-                photo_area,
-                text="＋",
-                font=("Segoe UI", 25),
-                bg=lavender,
-                fg="#B5A1C6"
-            ).pack(pady=(12, 0))
-
-            tk.Label(
-                photo_area,
-                text="PHOTO",
-                font=("Segoe UI", 8, "bold"),
-                bg=lavender,
-                fg=muted_text
-            ).pack()
-
-            #showing item  name and its LOST status
-            heading = tk.Frame(card, bg=card_bg)
-            heading.pack(fill="x", padx=13, pady=(8, 2))
-
-            tk.Label(
-                heading,
-                text=item.get("item_name", "Unnamed item"),
-                font=("Goudy Old Style", 18, "bold"),
-                bg=card_bg,
-                fg=purple,
-                anchor="w",
-                wraplength=175,
-                justify="left"
-            ).pack(side="left", fill="x", expand=True)
-
-            tk.Label(
-                heading,
-                text="LOST",
-                font=("Segoe UI", 8, "bold"),
-                bg="#F7E8ED",
-                fg="#A34D68",
-                padx=7,
-                pady=3
-            ).pack(side="right", padx=(5, 0))
-
-            # displaying a short description of missing item
-            tk.Label(
-                card,
-                text=item.get("description", "No description provided"),
-                font=("Segoe UI", 9),
-                bg=card_bg,
-                fg="#77717D",
-                anchor="w",
-                justify="left",
-                wraplength=205
-            ).pack(fill="x", padx=13, pady=(2, 10))
-
-            # adding  divider to separate description from  item details
-            tk.Frame(
-                card,
-                bg="#EEE8F1",
-                height=1
-            ).pack(fill="x", padx=13, pady=(0, 7))
-
-            #collecting extra info to display on card
-            details = [
-                ("Category", item.get("category", "N/A")),
-                ("Colour", item.get("color", "N/A")),
-                ("Location", item.get("location", "N/A")),
-                ("Date", item.get("date", "N/A"))
-            ]
-
-            #displaying each detail in its own row
-            for label_text, value in details:
-                detail_row = tk.Frame(card, bg=card_bg)
-                detail_row.pack(fill="x", padx=13, pady=3)
-
-                tk.Label(
-                    detail_row,
-                    text=label_text.upper(),
-                    font=("Segoe UI", 8, "bold"),
-                    bg=card_bg,
-                    fg=muted_text,
-                    anchor="w"
-                ).pack(side="left")
-
-                tk.Label(
-                    detail_row,
-                    text=value,
-                    font=("Segoe UI", 8),
-                    bg=card_bg,
-                    fg="#403747",
-                    anchor="e",
-                    wraplength=125,
-                    justify="right"
-                ).pack(side="right")
-
-            #chnging card border clr when mouse moves over it
-            def card_enter(event, card_widget=card):
-                card_widget.configure(highlightbackground="#9A7BB5")
-
-            # Returning border to its normal clr when mouse leaves
-            def card_leave(event, card_widget=card):
-                card_widget.configure(highlightbackground=card_border)
-
-            card.bind("<Enter>", card_enter)
-            card.bind("<Leave>", card_leave)
-
+            
+            
     # updating page number and arrow buttons
     #arrows are disabled when there are no more pages to visit
     page_label.config(text=f"{current_page + 1} / {total_pages}")
@@ -964,6 +1281,66 @@ def show_lost_page(page):
         state="normal" if current_page < total_pages - 1 else "disabled"
     )
 
+
+# displaying found item cards for slcted page
+def show_found_page(page):
+    global current_found_page
+
+    # calculating how many pages are needed
+    total_pages = max(
+        1,
+        (len(found_records) + cards_per_page - 1) // cards_per_page
+    )
+
+    # making sure selected page is within available range
+    current_found_page = max(0, min(page, total_pages - 1))
+
+    # removing cards from previous page
+    for widget in found_cards_frame.winfo_children():
+        widget.destroy()
+
+    # displaying message if no found items are available
+    if not found_records:
+        tk.Label(
+            found_cards_frame,
+            text="No found items have been reported yet.",
+            font=("Segoe UI", 12),
+            bg="#F8F3F8",
+            fg="#777777"
+        ).grid(row=0, column=0, columnspan=3, pady=35)
+
+    else:
+        # finding which 3 records should appear on current page
+        start_index = current_found_page * cards_per_page
+        page_items = found_records[
+            start_index:start_index + cards_per_page
+        ]
+
+        # creating cards using the shared function
+        for column, item in enumerate(page_items):
+            card = create_item_card(found_cards_frame, item, "FOUND")
+
+            card.grid(
+                row=0,
+                column=column,
+                sticky="nsew",
+                padx=7,
+                pady=7
+            )
+
+
+    # updating page number and arrow buttons
+    found_page_label.config(
+        text=f"{current_found_page + 1} / {total_pages}"
+    )
+
+    found_previous_button.config(
+        state="normal" if current_found_page > 0 else "disabled"
+    )
+
+    found_next_button.config(
+        state="normal" if current_found_page < total_pages - 1 else "disabled"
+    )
 
 #crting Previous button to move to earlier page
 previous_button = tk.Button(
@@ -1010,6 +1387,9 @@ next_button.pack(side="left", padx=10)
 
 #displaying first page of lost items when application starts
 show_lost_page(0)
+
+# displaying first page of found items
+show_found_page(0)
 
 
 # opening dashboard as default page
