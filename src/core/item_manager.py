@@ -1,17 +1,19 @@
 """
-Generative AI Acknowledgement:
-ChatGPT (OpenAI) was used to support the planning and development of this
-project through brainstorming, explaining programming concepts, clarifying
-technical questions, and providing guidance on Git setup and version control.
-All application code was independently written, implemented, and tested by
-the student.
+GenAI Acknowledgment (Assessment 1 - Assisted Reviewer):
+In compliance with Keele University academic integrity policies, I used 
+generative AI (Chatgpt) strictly as an assisted code reviewer and debugger. 
+I consulted the tool to help diagnose runtime exceptions (such as Tkinter TclError 
+and NameError), identify subtle typographical errors that were difficult to spot 
+manually, and check function execution flow. I take help to understanding git and how to commit 
+push and pull. As well as, i consulted with chatgpt during project architecture work and brainstorming.
+All core logic, functional decisions, and final code implementations were independently written, tested, 
+and verified by me.
 
 Student Name: Sadia Afroze Zafrin
 Student ID: 26032504
 """
 from datetime import datetime
 
-# generating unique ID
 # generating unique ID
 def generateItemID(item_type, items=None):
 
@@ -69,7 +71,7 @@ def validateDate(date):
         print("Invalid Date! Please use 'YYYY-MM-DD' format.")
         return False
 
- #generating item id
+#generating item id
 def createItem(item_type, item_name, category, color, brand, location, date, description, photo=None, items=None):
     item_ID = generateItemID(item_type, items)
 
