@@ -23,6 +23,7 @@ from datetime import datetime
 from src.core.storage import loadItems, saveItems
 from src.core.item_manager import registerItem
 import os
+from src.core.item_search import searchItems
 
 
 # managing search bar placeholder text
@@ -1559,36 +1560,43 @@ found_next_button.pack(side="left", padx=5)
 # --------------------------------------------------
 # SEARCH LOST & found ITEMS
 # --------------------------------------------------
-# searching through lost and found item records
-def search_items(search_entry, item_type):
+# srching lost and found item using item rcrd
 
+def search_items(search_entry, item_type):
     global lost_records, found_records
 
-    # getting search text and converting it to lowercase
     search_text = search_entry.get().strip().lower()
     if search_text == "search by item name, category or location...":
         search_text = ""
+    search_words = search_text.split()
 
-    # loading latest saved records
+
     all_items = loadItems()
+    searchable_fields = [
+        "item_ID",
+        "item_name",
+        "category",
+        "color",
+        "brand",
+        "location",
+        "date"
+    ]
 
-    # keeping records that match the search
-    matching_records = [
-    item for item in all_items
-    if item.get("item_type", "").lower() == item_type
-    and (
-        not search_text
-        or search_text in item.get("item_name", "").lower()
-        or search_text in item.get("category", "").lower()
-        or search_text in item.get("location", "").lower()
-    )
-]
+    matching_records = []
+    for item in all_items:
+        if str(item.get("item_type") or "").lower() != item_type:
+            continue
 
-    # updating the correct item records
+        item_details = " ".join(
+            str(item.get(field) or "").lower()
+            for field in searchable_fields
+        )
+        if all(word in item_details for word in search_words):
+            matching_records.append(item)
+
     if item_type == "lost":
         lost_records = matching_records
         show_lost_page(0)
-
     else:
         found_records = matching_records
         show_found_page(0)
@@ -1702,6 +1710,16 @@ def create_item_card(parent, item, status):
         padx=7,
         pady=3
     ).pack(side="right", padx=(5, 0))
+
+    # displaying item ID
+    tk.Label(
+        card,
+        text=f"ITEM ID: {item.get('item_ID', 'N/A')}",
+        font=("Segoe UI", 8, "bold"),
+        bg=card_bg,
+        fg=muted_text,
+        anchor="w"
+    ).pack(fill="x", padx=13, pady=(3, 5))
 
     # item description
     tk.Label(

@@ -1,10 +1,13 @@
 """
-Generative AI Acknowledgement:
-ChatGPT (OpenAI) was used to support the planning and development of this
-project through brainstorming, explaining programming concepts, clarifying
-technical questions, and providing guidance on Git setup and version control.
-All application code was independently written, implemented, and tested by
-the student.
+GenAI Acknowledgment (Assessment 1 - Assisted Reviewer):
+In compliance with Keele University academic integrity policies, I used 
+generative AI (Chatgpt) strictly as an assisted code reviewer and debugger. 
+I consulted the tool to help diagnose runtime exceptions (such as Tkinter TclError 
+and NameError), identify subtle typographical errors that were difficult to spot 
+manually, and check function execution flow. I take help to understanding git and how to commit 
+push and pull. As well as, i consulted with chatgpt during project architecture work and brainstorming.
+All core logic, functional decisions, and final code implementations were independently written, tested, 
+and verified by me.
 
 Student Name: Sadia Afroze Zafrin
 Student ID: 26032504
@@ -322,24 +325,32 @@ def updateItemMenu():
         print("Changes saved successfully.")
 
 
-#function to search items
+#fnction to srch items
 def searchMenu():
     print("\n===== SEARCH ITEMS =====")
     print("Leave a field empty if you don't want to use it.")
-
+    item_ID = input("Enter item ID: ").strip()
+    item_name = input("Enter item name: ").strip()
     category= input("Enter category: ").strip()
-    color=input("Enter color: ").strip()
-    brand= input("Enter brand: ").strip()
+    color = input("Enter color: ").strip()
+    brand = input("Enter brand: ").strip()
     location = input("Enter location: ").strip()
-
-    #search using the details entered
-    searchItems(
+    date =input("Enter date (YYYY-MM-DD): ").strip()
+    found_items = searchItems(
         items,
-        category or None,
-        color or None,
-        brand or None,
-        location or None
+        category=category or None,
+        color=color or None,
+        brand=brand or None,
+        location=location or None,
+        item_ID=item_ID or None,
+        item_name=item_name or None,
+        date=date or None
     )
+    if found_items:
+        print("\n--- SEARCH RESULTS ---")
+        viewAllItems(found_items)
+    else:
+        print("\nNo matching items found.")
 
 #run ReFind when this file is started
 if __name__ == "__main__":
