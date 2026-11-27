@@ -17,10 +17,12 @@ Student ID: 26032504
 
 # importing libraries needed for GUi
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox, filedialog
 from PIL import Image, ImageTk
 from datetime import datetime
-from src.core.storage import loadItems
+from src.core.storage import loadItems, saveItems
+from src.core.item_manager import registerItem
+import os
 
 
 # managing search bar placeholder text
@@ -210,7 +212,7 @@ found_banner_img_id = found_banner_canvas.create_image(
     anchor="nw"
 )
 
-found_banner_frame.bind("<Configure>", resize_found_banner)
+found_banner_canvas.bind("<Configure>", resize_found_banner)
 
 # adding shadow behind Found Items heading
 found_banner_canvas.create_text(
@@ -451,7 +453,411 @@ srch_entry.bind(
     lambda event: search_items(srch_entry, "lost")
 )
 
-# --------------------------------------------------
+# function to open item registration form
+def open_registration_form():
+
+    # creating a new window for item registration
+    registration_window = tk.Toplevel(window)
+    registration_window.title("Register Lost or Found Item")
+    registration_window.geometry("650x700")
+    registration_window.configure(bg="#F8F3F8")
+
+    # keeping the registration window above the main window
+    registration_window.transient(window)
+    registration_window.grab_set()
+
+    # creating canvas for scrollable form
+    form_canvas = tk.Canvas(
+        registration_window,
+        bg="#F8F3F8",
+        highlightthickness=0
+    )
+    form_canvas.pack(side="left", fill="both", expand=True)
+
+    # adding vertical scrollbar
+    form_scrollbar = ttk.Scrollbar(
+        registration_window,
+        orient="vertical",
+        command=form_canvas.yview
+    )
+    form_scrollbar.pack(side="right", fill="y")
+
+    form_canvas.configure(
+        yscrollcommand=form_scrollbar.set
+    )
+
+    # crting frame inside the canvas
+    form_frame = tk.Frame(
+        form_canvas,
+        bg="#F8F3F8"
+    )
+
+    form_canvas_window = form_canvas.create_window(
+        (0, 0),
+        window=form_frame,
+        anchor="nw"
+    )
+    # adding space around form content
+    form_frame.configure(padx=40, pady=10)
+
+    # updating scroll area whenform content changes
+
+    def update_scroll_region(event):
+        form_canvas.configure(
+            scrollregion=form_canvas.bbox("all")
+        )
+
+    form_frame.bind("<Configure>", update_scroll_region)
+
+    # making form frame match canvas width
+    def resize_form(event):
+        form_canvas.itemconfig(
+            form_canvas_window,
+            width=event.width
+        )
+
+    form_canvas.bind("<Configure>", resize_form)
+
+    # creating the main heading
+    tk.Label(
+        form_frame,
+        text="Report a Lost or Found Item",
+        font=("Goudy Old Style", 25, "bold"),
+        bg="#F8F3F8",
+        fg="#30213F"
+    ).pack(pady=(25, 5))
+
+    # adding a short description
+    tk.Label(
+        form_frame,
+        text="Please provide the details of the item below.",
+        font=("Segoe UI", 10),
+        bg="#F8F3F8",
+        fg="#76558A"
+    ).pack(pady=(0, 20))
+
+    # item type label
+    tk.Label(
+        form_frame,
+        text="Item Type *",
+        font=("Segoe UI", 11, "bold"),
+        bg="#F8F3F8",
+        fg="#30213F"
+    ).pack(anchor="w", pady=(5, 5))
+
+    # dropdown for selecting lost or found
+    item_type_entry = ttk.Combobox(
+        form_frame,
+        values=["Lost", "Found"],
+        state="readonly",
+        font=("Segoe UI", 11)
+    )
+    item_type_entry.pack(fill="x", ipady=7)
+    item_type_entry.set("Select Item Type")
+
+    # item name label
+    tk.Label(
+        form_frame,
+        text="Item Name *",
+        font=("Segoe UI", 11, "bold"),
+        bg="#F8F3F8",
+        fg="#30213F"
+    ).pack(anchor="w", pady=(15, 5))
+
+    # entry field for item name
+    item_name_entry = tk.Entry(
+        form_frame,
+        font=("Segoe UI", 11),
+        relief="solid",
+        bd=1
+    )
+    item_name_entry.pack(fill="x", ipady=7)
+
+    # category label
+    tk.Label(
+        form_frame,
+        text="Category *",
+        font=("Segoe UI", 11, "bold"),
+        bg="#F8F3F8",
+        fg="#30213F"
+    ).pack(anchor="w", pady=(15, 5))
+
+    # dropdown for selecting item category
+    category_entry = ttk.Combobox(
+        form_frame,
+        values=[
+            "Electronics",
+            "Clothing",
+            "Bags",
+            "Accessories",
+            "Documents",
+            "Keys",
+            "Other"
+        ],
+        state="readonly",
+        font=("Segoe UI", 11)
+    )
+    category_entry.pack(fill="x", ipady=7)
+    category_entry.set("Select Category")
+
+    # colour label
+    tk.Label(
+        form_frame,
+        text="Colour *",
+        font=("Segoe UI", 11, "bold"),
+        bg="#F8F3F8",
+        fg="#30213F"
+    ).pack(anchor="w", pady=(15, 5))
+
+    # entry field for item colour
+    color_entry = tk.Entry(
+        form_frame,
+        font=("Segoe UI", 11),
+        relief="solid",
+        bd=1
+    )
+    color_entry.pack(fill="x", ipady=7)
+
+    # brand label
+    tk.Label(
+        form_frame,
+        text="Brand (Optional)",
+        font=("Segoe UI", 11, "bold"),
+        bg="#F8F3F8",
+        fg="#30213F"
+    ).pack(anchor="w", pady=(15, 5))
+
+    # entry field for item brand
+    brand_entry = tk.Entry(
+        form_frame,
+        font=("Segoe UI", 11),
+        relief="solid",
+        bd=1
+    )
+    brand_entry.pack(fill="x", ipady=7)
+    # location label
+    tk.Label(
+        form_frame,
+        text="Location *",
+        font=("Segoe UI", 11, "bold"),
+        bg="#F8F3F8",
+        fg="#30213F"
+    ).pack(anchor="w", pady=(15, 5))
+
+    # entry field for item location
+    location_entry = tk.Entry(
+        form_frame,
+        font=("Segoe UI", 11),
+        relief="solid",
+        bd=1
+    )
+    location_entry.pack(fill="x", ipady=7)
+
+    # date label
+    tk.Label(
+        form_frame,
+        text="Date (YYYY-MM-DD) *",
+        font=("Segoe UI", 11, "bold"),
+        bg="#F8F3F8",
+        fg="#30213F"
+    ).pack(anchor="w", pady=(15, 5))
+
+    # entry field with today's date as the default
+    date_entry = tk.Entry(
+        form_frame,
+        font=("Segoe UI", 11),
+        relief="solid",
+        bd=1
+    )
+    date_entry.pack(fill="x", ipady=7)
+    date_entry.insert(0, datetime.now().strftime("%Y-%m-%d"))
+
+    # variable to store the selected photo path
+    selected_photo = tk.StringVar(value="")
+
+    # photo section heading
+    tk.Label(
+        form_frame,
+        text="Item Photo (Optional)",
+        font=("Segoe UI", 11, "bold"),
+        bg="#F8F3F8",
+        fg="#30213F"
+    ).pack(anchor="w", pady=(15, 5))
+
+    # label to display selected photo name
+    photo_name_label = tk.Label(
+        form_frame,
+        text="No photo selected",
+        font=("Segoe UI", 9),
+        bg="#F8F3F8",
+        fg="#76558A"
+    )
+    photo_name_label.pack(anchor="w", pady=3)
+
+    # image preview label
+    photo_preview_label = tk.Label(
+        form_frame,
+        text="Photo Preview",
+        font=("Segoe UI", 9),
+        bg="white",
+        fg="#76558A",
+        width=25,
+        height=6
+    )
+    photo_preview_label.pack(anchor="w", pady=5)
+
+    # function to upload and preview an item photo
+    def upload_photo():
+
+        photo_path = filedialog.askopenfilename(
+            parent=registration_window,
+            title="Select Item Photo",
+            filetypes=[
+                ("Image Files", "*.png *.jpg *.jpeg *.gif *.bmp")
+            ]
+        )
+
+        # checking whether a photo was selected
+        if not photo_path:
+            return
+
+        try:
+            # opening and resizing the selected image
+            image = Image.open(photo_path)
+            image.thumbnail((180, 120))
+
+            # converting image for Tkinter
+            photo_image = ImageTk.PhotoImage(image)
+
+            # displaying the image preview
+            photo_preview_label.config(
+                image=photo_image,
+                text="",
+                width=180,
+                height=120
+            )
+
+            # keeping a reference to prevent the image disappearing
+            photo_preview_label.image = photo_image
+
+            # storing the selected photo path
+            selected_photo.set(photo_path)
+
+            # displaying the selected filename
+            photo_name_label.config(
+                text=photo_path.replace("\\", "/").split("/")[-1]
+            )
+
+        except Exception:
+            messagebox.showerror(
+                "Invalid Photo",
+                "Unable to open this image. Please select another photo.",
+                parent=registration_window
+            )
+
+    # button to upload an item photo
+    tk.Button(
+        form_frame,
+        text="Upload Photo",
+        font=("Segoe UI", 10, "bold"),
+        bg="#76558A",
+        fg="white",
+        activebackground="#30213F",
+        activeforeground="white",
+        relief="flat",
+        cursor="hand2",
+        command=upload_photo
+    ).pack(anchor="w", pady=8)
+
+    # description label
+    tk.Label(
+        form_frame,
+        text="Description *",
+        font=("Segoe UI", 11, "bold"),
+        bg="#F8F3F8",
+        fg="#30213F"
+    ).pack(anchor="w", pady=(15, 5))
+
+    # text area for item description
+    description_entry = tk.Text(
+        form_frame,
+        font=("Segoe UI", 11),
+        height=4,
+        relief="solid",
+        bd=1,
+        wrap="word"
+    )
+    description_entry.pack(fill="x")
+    # function to submit the registered item
+    def submit_item():
+
+        # collecting information from the form
+        item_type = item_type_entry.get().strip().lower()
+        item_name = item_name_entry.get().strip()
+        category = category_entry.get().strip()
+        color = color_entry.get().strip()
+        brand = brand_entry.get().strip()
+        location = location_entry.get().strip()
+        date = date_entry.get().strip()
+        description = description_entry.get("1.0", "end").strip()
+
+        # loading existing records
+        items = loadItems()
+
+        # registering the new item using the core function
+        new_item = registerItem(
+            items,
+            item_type,
+            item_name,
+            category,
+            color,
+            brand,
+            location,
+            date,
+            description,
+            selected_photo.get() or None
+        )
+
+        # checking whether registration was successful
+        if new_item is None:
+            messagebox.showerror(
+                "Registration Failed",
+                "Please check all required fields and enter a valid date in YYYY-MM-DD format.",
+                parent=registration_window
+            )
+            return
+
+        # saving the updated records
+        saveItems(items)
+
+        # refreshing dashboard and item pages
+        refresh_item_records()
+
+        # showing successful registration message
+        messagebox.showinfo(
+            "Registration Successful",
+            f"Your item has been registered successfully!\nItem ID: {new_item['item_ID']}",
+            parent=registration_window
+        )
+
+        # closing the registration window
+        registration_window.destroy()
+
+    # creating the register button
+    tk.Button(
+        form_frame,
+        text="Register Item",
+        font=("Segoe UI", 12, "bold"),
+        bg="#30213F",
+        fg="white",
+        activebackground="#76558A",
+        activeforeground="white",
+        relief="flat",
+        cursor="hand2",
+        command=submit_item
+    ).pack(fill="x", pady=25, ipady=10)
+
+# ----------------------------------------------------
 # SIDEBAR NAVIGATION
 # --------------------------------------------------
 
@@ -502,9 +908,9 @@ logo_label = tk.Label(
 logo_label.pack(side="left", padx=(0, 8))
 
 
-#crting navigation buttons for different sctions
-for name in ["Dashboard", "Lost Items", "Found Items", "Contact Request"]:
 
+# creating navigation buttons for different sections
+for name in ["Dashboard","Register Lost or Found Item","Lost Items","Found Items","Contact Request"]:
     # connecting available buttons to their page frames
     if name == "Dashboard":
         page = dashboard_frame
@@ -514,35 +920,40 @@ for name in ["Dashboard", "Lost Items", "Found Items", "Contact Request"]:
 
     elif name == "Found Items":
         page = found_items_frame
-    
 
     else:
-        # these pages will connected when developed
         page = None
 
+    # creating sidebar button
     nav_button = tk.Button(
         side_bar,
         text=name,
-        font=("Goudy Old Style", 15),
+        font=("Goudy Old Style", 15, "bold" if name == "Register Lost or Found Item" else "normal"),
         bg="#30213F",
         fg="white",
-        activebackground="#76558A",
+        activebackground="#8D6AA3",
         activeforeground="white",
         relief="flat",
         anchor="w",
         padx=25,
         pady=12,
-        cursor="hand2",
-        command=lambda p=page, b=None: None
+        cursor="hand2"
     )
 
     nav_button.pack(fill="x", padx=10, pady=3)
 
-    # saving each button so its clr can updated later
-    nav_buttons.append(nav_button)
-
-   # connecting buttons that already have working pages
+    # saving page navigation buttons for highlighting
     if page is not None:
+        nav_buttons.append(nav_button)
+
+    # connecting the registration button
+    if name == "Register Lost or Found Item":
+        nav_button.config(
+            command=lambda: open_registration_form()
+        )
+
+    # connecting buttons that already have working pages
+    elif page is not None:
 
         if name == "Found Items":
             nav_button.config(
@@ -557,24 +968,26 @@ for name in ["Dashboard", "Lost Items", "Found Items", "Contact Request"]:
                 command=lambda p=page, b=nav_button: show_page(p, b)
             )
 
-        
-    # chnging button clr when mouse moves over it
+    # changing button colour when mouse moves over it
     nav_button.bind(
         "<Enter>",
         lambda event, button=nav_button:
-            button.config(bg="#76558A")
+            button.config(bg="#8D6AA3")
     )
 
-    # keeping the slctd page highlighted when mouse leaves
-    # other buttons return to their normal colour
+    # restoring the correct colour when mouse leaves
     nav_button.bind(
         "<Leave>",
         lambda event, button=nav_button:
             button.config(
-                bg="#76558A" if button == slctd_nav_button
-                else "#30213F"
+                bg=(
+                    "#76558A"
+                    if button == slctd_nav_button
+                    else "#30213F"
+                )
             )
     )
+
 
 
 # --------------------------------------------------
@@ -684,6 +1097,7 @@ found_count = sum(1 for item in items if item["item_type"] == "found")
 
 
 # crting summary cards to show current item counts
+summary_count_labels = {}
 for title, number in [
     ("Lost Items", lost_count),
     ("Found Items", found_count),
@@ -710,14 +1124,18 @@ for title, number in [
             label.config(wraplength=max(100, event.width - 40))
     )
 
-    # displaying nmbr for each summary card
-    tk.Label(
+    # displaying number for each summary card
+    number_label = tk.Label(
         card,
         text=number,
         font=("Goudy Old Style", 26, "bold"),
         bg="white",
         fg="#30213F"
-    ).pack(anchor="w")
+    )
+    number_label.pack(anchor="w")
+
+    # keeping a reference so the number can be updated later
+    summary_count_labels[title] = number_label
 
 
 # --------------------------------------------------
@@ -918,7 +1336,98 @@ if not recent_items:
         values=("No items reported yet", "", "", "", "", "")
     )
 
+# refreshing dashboard information using the latest saved records
+def refresh_dashboard():
 
+    # loading the latest records from JSON storage
+    latest_items = loadItems()
+
+    # updating lost and found item counts
+    lost_count = sum(
+        1 for item in latest_items
+        if item.get("item_type", "").lower() == "lost"
+    )
+
+    found_count = sum(
+        1 for item in latest_items
+        if item.get("item_type", "").lower() == "found"
+    )
+
+    # updating the summary card numbers
+    summary_count_labels["Lost Items"].config(text=lost_count)
+    summary_count_labels["Found Items"].config(text=found_count)
+
+    # removing old rows from the recent items table
+    for row in recent_table.get_children():
+        recent_table.delete(row)
+
+    # sorting the latest records by date
+    latest_recent_items = sorted(
+        latest_items,
+        key=lambda item: item.get("date", ""),
+        reverse=True
+    )
+
+    # displaying the latest 10 records
+    for item in latest_recent_items[:10]:
+
+        try:
+            display_date = datetime.strptime(
+                item.get("date", ""),
+                "%Y-%m-%d"
+            ).strftime("%d %b %Y")
+        except ValueError:
+            display_date = item.get("date", "N/A")
+
+        item_type = item.get("item_type", "").lower()
+
+        recent_table.insert(
+            "",
+            "end",
+            values=(
+                item.get("item_name", "N/A"),
+                item_type.capitalize(),
+                item.get("category", "N/A"),
+                item.get("location", "N/A"),
+                display_date,
+                item.get("status", "N/A")
+            ),
+            tags=(item_type,)
+        )
+
+    # showing a message when no records are available
+    if not latest_recent_items:
+        recent_table.insert(
+            "",
+            "end",
+            values=("No items reported yet", "", "", "", "", "")
+        )
+
+# refreshing all item records and pages
+def refresh_item_records():
+
+    global items, lost_records, found_records
+
+    # loading the latest saved records
+    items = loadItems()
+
+    # separating lost and found records
+    lost_records = [
+        item for item in items
+        if item.get("item_type", "").lower() == "lost"
+    ]
+
+    found_records = [
+        item for item in items
+        if item.get("item_type", "").lower() == "found"
+    ]
+
+    # refreshing both item pages
+    show_lost_page(0)
+    show_found_page(0)
+
+    # refreshing dashboard counts and recent items
+    refresh_dashboard()
 # --------------------------------------------------
 # LOST & FOUND ITEMS CARDS AND PAGINATION
 # --------------------------------------------------
@@ -1043,7 +1552,7 @@ found_next_button = tk.Button(
     relief="flat",
     width=3,
     cursor="hand2",
-    command=lambda: show_lost_page(current_page + 1)
+    command=lambda: show_found_page(current_found_page + 1)
 )
 found_next_button.pack(side="left", padx=5)
 
@@ -1057,20 +1566,23 @@ def search_items(search_entry, item_type):
 
     # getting search text and converting it to lowercase
     search_text = search_entry.get().strip().lower()
+    if search_text == "search by item name, category or location...":
+        search_text = ""
 
     # loading latest saved records
     all_items = loadItems()
 
     # keeping records that match the search
     matching_records = [
-        item for item in all_items
-        if item.get("item_type", "").lower() == item_type
-        and (
-            search_text in item.get("item_name", "").lower()
-            or search_text in item.get("category", "").lower()
-            or search_text in item.get("location", "").lower()
-        )
-    ]
+    item for item in all_items
+    if item.get("item_type", "").lower() == item_type
+    and (
+        not search_text
+        or search_text in item.get("item_name", "").lower()
+        or search_text in item.get("category", "").lower()
+        or search_text in item.get("location", "").lower()
+    )
+]
 
     # updating the correct item records
     if item_type == "lost":
@@ -1101,8 +1613,8 @@ def create_item_card(parent, item, status):
         bg="#8B6AAE",
         height=5
     ).pack(fill="x")
-
-    # photo placeholder
+    
+    # photo display area
     photo_area = tk.Frame(
         card,
         bg=lavender,
@@ -1111,21 +1623,52 @@ def create_item_card(parent, item, status):
     photo_area.pack(fill="x", padx=12, pady=(12, 5))
     photo_area.pack_propagate(False)
 
-    tk.Label(
-        photo_area,
-        text="＋",
-        font=("Segoe UI", 25),
-        bg=lavender,
-        fg="#B5A1C6"
-    ).pack(pady=(12, 0))
+    # getting the saved photo path
+    photo_path = item.get("photo")
 
-    tk.Label(
-        photo_area,
-        text="PHOTO",
-        font=("Segoe UI", 8, "bold"),
-        bg=lavender,
-        fg=muted_text
-    ).pack()
+    # checking whether a photo exists
+    if photo_path and os.path.isfile(photo_path):
+
+        try:
+            # opening and resizing the saved photo
+            image = Image.open(photo_path)
+            image.thumbnail((200, 95))
+
+            # converting the image for Tkinter
+            photo_image = ImageTk.PhotoImage(image)
+
+            # displaying the photo
+            photo_label = tk.Label(
+                photo_area,
+                image=photo_image,
+                bg=lavender
+            )
+            photo_label.pack(expand=True)
+
+            # keeping the image reference
+            photo_label.image = photo_image
+
+        except Exception:
+            photo_path = None
+
+    # displaying placeholder if no valid photo exists
+    if not photo_path or not os.path.isfile(photo_path):
+
+        tk.Label(
+            photo_area,
+            text="＋",
+            font=("Segoe UI", 25),
+            bg=lavender,
+            fg="#B5A1C6"
+        ).pack(pady=(12, 0))
+
+        tk.Label(
+            photo_area,
+            text="PHOTO",
+            font=("Segoe UI", 8, "bold"),
+            bg=lavender,
+            fg=muted_text
+        ).pack()
 
     # item name and status
     heading = tk.Frame(card, bg=card_bg)
